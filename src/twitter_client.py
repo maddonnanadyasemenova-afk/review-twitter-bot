@@ -180,6 +180,7 @@ def get_my_user_id(client: tweepy.Client) -> Optional[str]:
     import string
     import urllib.parse
     import base64
+    import os
     import requests as req
 
     # Read directly from env to avoid config.py caching empty values
