@@ -90,7 +90,10 @@ def run_tweet_bot(force_format: str | None = None):
         tweet_text = generate_original_tweet(tweet_format)
         tweet_text = sanitize_tweet(tweet_text)
     except Exception as e:
+        import traceback
         print(f"[ERROR] GPT generation failed: {e}")
+        print(f"[ERROR] Full traceback:")
+        traceback.print_exc()
         sys.exit(1)
 
     print(f"\n[CONTENT] Generated tweet ({len(tweet_text)} chars):")
