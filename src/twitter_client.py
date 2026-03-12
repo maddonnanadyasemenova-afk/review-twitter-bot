@@ -170,20 +170,66 @@ def like_tweet(client: tweepy.Client, tweet_id: str, my_user_id: str) -> bool:
 
 
 def get_my_user_id(client: tweepy.Client) -> Optional[str]:
-    """Return the authenticated user's ID."""
+    """
+    Return the authenticated user's ID via direct OAuth 1.0a HTTP request.
+    Uses raw requests + OAuth1 to avoid tweepy.get_me() 401 issues.
+    """
+    import hmac
+    import hashlib
+    import random
+    import string
+    import urllib.parse
+    import base64
+    import requests as req
+    from config import (
+        TWITTER_API_KEY, TWITTER_API_SECRET,
+        TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET,
+    )
+
+    url = "https://api.twitter.com/2/users/me"
+    method = "GET"
+    nonce = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+    ts = str(int(time.time()))
+
+    oauth_params = {
+        "oauth_consumer_key": TWITTER_API_KEY,
+        "oauth_nonce": nonce,
+        "oauth_signature_method": "HMAC-SHA1",
+        "oauth_timestamp": ts,
+        "oauth_token": TWITTER_ACCESS_TOKEN,
+        "oauth_version": "1.0",
+    }
+    sorted_params = "&".join(
+        f"{urllib.parse.quote(k, safe='')}={urllib.parse.quote(str(v), safe='')}"
+        for k, v in sorted(oauth_params.items())
+    )
+    base_string = "&".join([
+        method.upper(),
+        urllib.parse.quote(url, safe=""),
+        urllib.parse.quote(sorted_params, safe=""),
+    ])
+    signing_key = f"{urllib.parse.quote(TWITTER_API_SECRET, safe='')}&{urllib.parse.quote(TWITTER_ACCESS_TOKEN_SECRET, safe='')}"
+    sig = base64.b64encode(
+        hmac.new(signing_key.encode(), base_string.encode(), hashlib.sha1).digest()
+    ).decode()
+    oauth_params["oauth_signature"] = sig
+    auth_header = "OAuth " + ", ".join(
+        f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(str(v), safe="")}"'
+        for k, v in sorted(oauth_params.items())
+    )
+
     try:
-        me = client.get_me()
-        return str(me.data.id)
-    except tweepy.errors.Unauthorized as e:
-        print(f"[ERROR] 401 Unauthorized — details: {e}")
-        print("[HINT] Common causes:")
-        print("  1. Access Token was created BEFORE setting Read+Write permissions")
-        print("     → Go to Twitter Developer Portal → App → Settings → User authentication settings")
-        print("     → Set permissions to 'Read and Write'")
-        print("     → Then regenerate Access Token & Secret")
-        print("  2. Wrong Access Token type — make sure you use OAuth 1.0a tokens, not OAuth 2.0")
-        print("  3. App is not attached to a Twitter account (needs Elevated access or Basic)")
-        return None
-    except tweepy.TweepyException as e:
+        r = req.get(url, headers={"Authorization": auth_header}, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            user_id = data["data"]["id"]
+            username = data["data"]["username"]
+            print(f"[AUTH] Authenticated as @{username} (id={user_id})")
+            return user_id
+        else:
+            print(f"[ERROR] Failed to get user ID: HTTP {r.status_code}")
+            print(f"[ERROR] Response: {r.text[:300]}")
+            return None
+    except Exception as e:
         print(f"[ERROR] Failed to get user ID: {e}")
         return None
