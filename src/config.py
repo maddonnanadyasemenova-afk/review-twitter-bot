@@ -74,7 +74,7 @@ PRODUCT_DESCRIPTION = (
     "an AI platform that helps SaaS companies collect, analyze, "
     "and act on customer reviews and feedback"
 )
-PRODUCT_URL = "https://yourproducturl.com"  # Update this
+PRODUCT_URL = "https://getreviewai.org"  # Update this
 
 # ─── Logging ────────────────────────────────────────────────────────────────
 LOG_FILE = "data/bot_log.json"
