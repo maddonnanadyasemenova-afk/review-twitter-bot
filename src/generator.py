@@ -7,7 +7,10 @@ from openai import OpenAI
 
 from config import OPENAI_API_KEY, OPENAI_MODEL, PRODUCT_NAME, PRODUCT_DESCRIPTION
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+
+def _get_openai_client() -> OpenAI:
+    """Create OpenAI client lazily to avoid import-time errors."""
+    return OpenAI(api_key=OPENAI_API_KEY)
 
 # ─── System Prompt ────────────────────────────────────────────────────────────
 
@@ -47,6 +50,7 @@ Trigger keyword detected: "{trigger_keyword}"
 Write a helpful, expert reply to this tweet. Follow all rules from your persona.
 Return ONLY the reply text, nothing else."""
 
+    client = _get_openai_client()
     response = client.chat.completions.create(
         model=OPENAI_MODEL,
         messages=[
@@ -109,6 +113,7 @@ def generate_original_tweet(format_type: str = "stat") -> str:
         "Return ONLY the tweet text. No explanations, no quotes around it."
     )
 
+    client = _get_openai_client()
     response = client.chat.completions.create(
         model=OPENAI_MODEL,
         messages=[
