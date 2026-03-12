@@ -99,6 +99,16 @@ TWEET_FORMATS = {
         "with customer reviews or feedback. Make it a compelling hook that makes people want to read more. "
         "End with '(thread)' or a numbered indicator like '1/7'. Max 1 hashtag."
     ),
+    "product_promo": (
+        f"Write a compelling promotional tweet about {PRODUCT_NAME} — {PRODUCT_DESCRIPTION}. "
+        "Rules: sound human and genuine, NOT like an ad. Focus on the pain it solves, not features. "
+        "Use one of these angles (rotate daily): "
+        "1) A specific problem it solves with a concrete outcome. "
+        "2) A surprising insight about why most companies lose customers due to bad review handling. "
+        "3) A direct CTA tweet: 'If you're a SaaS founder struggling with X, we built Y for you.' "
+        "4) Social proof angle: what customers say after using it. "
+        "Keep it under 240 characters. Max 2 hashtags. End with a soft CTA or question."
+    ),
 }
 
 

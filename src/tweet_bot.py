@@ -24,16 +24,30 @@ WEEKLY_SCHEDULE = {
     (6, 15): "thread_intro",  # Sunday 18:00 UTC+3 → 15:00 UTC
 }
 
+# Daily product promo: every day at 17:00 UTC+3 (14:00 UTC)
+DAILY_PROMO_HOUR_UTC = 14
+
 
 def get_todays_format() -> str | None:
     """
     Determine which tweet format to post based on current UTC time.
     Returns format string or None if no tweet scheduled for this hour.
+    Priority: weekly content first, then daily product promo.
     """
     now = datetime.now(timezone.utc)
     weekday = now.weekday()
     hour = now.hour
-    return WEEKLY_SCHEDULE.get((weekday, hour))
+
+    # Check weekly content schedule first
+    weekly = WEEKLY_SCHEDULE.get((weekday, hour))
+    if weekly:
+        return weekly
+
+    # Daily product promo at 17:00 UTC+3 (14:00 UTC) every day
+    if hour == DAILY_PROMO_HOUR_UTC:
+        return "product_promo"
+
+    return None
 
 
 def run_tweet_bot(force_format: str | None = None):
@@ -105,7 +119,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Post an original tweet")
     parser.add_argument(
         "--format",
-        choices=["stat", "tip", "question", "case", "hot_take", "thread_intro"],
+        choices=["stat", "tip", "question", "case", "hot_take", "thread_intro", "product_promo"],
         help="Force a specific tweet format (overrides schedule)",
         default=None,
     )
