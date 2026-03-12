@@ -10,7 +10,12 @@ from config import OPENAI_API_KEY, OPENAI_MODEL, PRODUCT_NAME, PRODUCT_DESCRIPTI
 
 def _get_openai_client() -> OpenAI:
     """Create OpenAI client lazily to avoid import-time errors."""
-    return OpenAI(api_key=OPENAI_API_KEY)
+    import os
+    api_key = os.environ.get("OPENAI_API_KEY", "") or OPENAI_API_KEY
+    return OpenAI(
+        api_key=api_key,
+        base_url="https://api.openai.com/v1",
+    )
 
 # ─── System Prompt ────────────────────────────────────────────────────────────
 
