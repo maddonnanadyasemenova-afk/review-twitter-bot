@@ -174,6 +174,16 @@ def get_my_user_id(client: tweepy.Client) -> Optional[str]:
     try:
         me = client.get_me()
         return str(me.data.id)
+    except tweepy.errors.Unauthorized as e:
+        print(f"[ERROR] 401 Unauthorized — details: {e}")
+        print("[HINT] Common causes:")
+        print("  1. Access Token was created BEFORE setting Read+Write permissions")
+        print("     → Go to Twitter Developer Portal → App → Settings → User authentication settings")
+        print("     → Set permissions to 'Read and Write'")
+        print("     → Then regenerate Access Token & Secret")
+        print("  2. Wrong Access Token type — make sure you use OAuth 1.0a tokens, not OAuth 2.0")
+        print("  3. App is not attached to a Twitter account (needs Elevated access or Basic)")
+        return None
     except tweepy.TweepyException as e:
         print(f"[ERROR] Failed to get user ID: {e}")
         return None
