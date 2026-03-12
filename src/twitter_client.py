@@ -181,10 +181,12 @@ def get_my_user_id(client: tweepy.Client) -> Optional[str]:
     import urllib.parse
     import base64
     import requests as req
-    from config import (
-        TWITTER_API_KEY, TWITTER_API_SECRET,
-        TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET,
-    )
+
+    # Read directly from env to avoid config.py caching empty values
+    TWITTER_API_KEY           = os.environ.get("TWITTER_API_KEY", "") or os.environ.get("TWITTER_CONSUMER_KEY", "")
+    TWITTER_API_SECRET        = os.environ.get("TWITTER_API_SECRET", "") or os.environ.get("TWITTER_CONSUMER_SECRET", "")
+    TWITTER_ACCESS_TOKEN      = os.environ.get("TWITTER_ACCESS_TOKEN", "")
+    TWITTER_ACCESS_TOKEN_SECRET = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET", "")
 
     url = "https://api.twitter.com/2/users/me"
     method = "GET"
