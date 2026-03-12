@@ -1,0 +1,75 @@
+name: Original Tweet Bot
+
+on:
+  schedule:
+    # Monday 09:00 UTC+3 = 06:00 UTC
+    - cron: "0 6 * * 1"
+    # Tuesday 12:00 UTC+3 = 09:00 UTC
+    - cron: "0 9 * * 2"
+    # Wednesday 10:00 UTC+3 = 07:00 UTC
+    - cron: "0 7 * * 3"
+    # Thursday 14:00 UTC+3 = 11:00 UTC
+    - cron: "0 11 * * 4"
+    # Friday 11:00 UTC+3 = 08:00 UTC
+    - cron: "0 8 * * 5"
+    # Sunday 18:00 UTC+3 = 15:00 UTC
+    - cron: "0 15 * * 0"
+  workflow_dispatch:
+    inputs:
+      format:
+        description: "Tweet format to post"
+        required: false
+        default: "stat"
+        type: choice
+        options:
+          - stat
+          - tip
+          - question
+          - case
+          - hot_take
+          - thread_intro
+
+jobs:
+  tweet:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Tweet Bot
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          cd src
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python tweet_bot.py --format ${{ github.event.inputs.format }}
+          else
+            python tweet_bot.py
+          fi
+
+      - name: Commit updated state files
+        run: |
+          git config --local user.email "bot@review-app.com"
+          git config --local user.name "Review Bot"
+          git add data/
+          git diff --staged --quiet || git commit -m "chore: update bot state [skip ci]"
+          git push
