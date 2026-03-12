@@ -210,13 +210,19 @@ def get_my_user_id(client: tweepy.Client) -> Optional[str]:
     ])
     signing_key = f"{urllib.parse.quote(TWITTER_API_SECRET, safe='')}&{urllib.parse.quote(TWITTER_ACCESS_TOKEN_SECRET, safe='')}"
     sig = base64.b64encode(
-        hmac.new(signing_key.encode(), base_string.encode(), hashlib.sha1).digest()
+        hmac.new(signing_key.encode(), base_string.encode(), hashlib.sha1).digest()  # noqa
     ).decode()
     oauth_params["oauth_signature"] = sig
     auth_header = "OAuth " + ", ".join(
         f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(str(v), safe="")}"'
         for k, v in sorted(oauth_params.items())
     )
+
+    # Debug: print key lengths to verify secrets are loaded
+    print(f"[DEBUG] TWITTER_API_KEY length: {len(TWITTER_API_KEY)}")
+    print(f"[DEBUG] TWITTER_API_SECRET length: {len(TWITTER_API_SECRET)}")
+    print(f"[DEBUG] TWITTER_ACCESS_TOKEN length: {len(TWITTER_ACCESS_TOKEN)}")
+    print(f"[DEBUG] TWITTER_ACCESS_TOKEN_SECRET length: {len(TWITTER_ACCESS_TOKEN_SECRET)}")
 
     try:
         r = req.get(url, headers={"Authorization": auth_header}, timeout=10)
